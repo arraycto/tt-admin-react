@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { Modal } from 'antd'
 
 const request = axios.create({
   headers: {
@@ -24,11 +25,18 @@ request.interceptors.response.use(
     if (res.status !== 200) {
       if (res.status === 401 && window.loginGlobalMessageBoxCount === 0) {
         window.loginGlobalMessageBoxCount = 1
+        Modal.confirm({
+          title: '登录过期',
+          content: res.msg,
+          onOk: () => {
+            window.location.reload()
+          },
+          okText: '重新登录',
+          cancelText: '取消'
+        })
       }
-      return Promise.reject(new Error(res.msg || 'Error'))
-    } else {
-      return response
     }
+    return response
   },
   error => {
     console.log('err' + error) // for debug

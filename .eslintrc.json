@@ -96,6 +96,7 @@
         "arrow-spacing": ["warn", {
             "before": true,
             "after": true
-        }]
+        }],
+        "handle-callback-err":"off"
     }
 }

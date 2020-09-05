@@ -1,0 +1,51 @@
+.login-contain {
+  height: 100%;
+
+  .login-page {
+    height: 100%;
+
+    .login-form {
+      width: 368px;
+      margin: 0 auto;
+
+      .user-img {
+        margin: 110px 0 26px 0;
+        font-size: 28px;
+        text-align: center;
+      }
+
+      .user-img img {
+        width: 50px;
+        margin-right: 18px;
+      }
+
+      .user-img>* {
+        vertical-align: middle;
+      }
+
+      .login-form-forgot {
+        float: right;
+      }
+
+      .login-form-button {
+        width: 100%;
+      }
+
+      .new-user {
+        float: right;
+      }
+    }
+
+    .ant-spin-nested-loading>div>.ant-spin {
+      max-height: none;
+    }
+
+    .ant-spin-nested-loading {
+      height: 100%;
+    }
+
+    .ant-spin-container {
+      height: 100%;
+    }
+  }
+}

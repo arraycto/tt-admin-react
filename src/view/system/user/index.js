@@ -3,15 +3,25 @@ import React from 'react'
 import './index.scss'
 
 import { observer } from 'mobx-react'
-
+import { Table } from 'antd'
+import { getUserList } from '@/api/user'
+import { observable } from 'mobx'
 @observer
 class User extends React.Component {
-  onCollapseChange = collapsed => {
-    this.props.app.collapsed = true
+  @observable tableData = []
+  getUserList () {
+    getUserList().then(res => {
+      if (res.data.status === 200) {
+        console.log(res.data.data)
+      }
+    })
+  }
+  componentDidMount () {
+    this.getUserList()
   }
   render () {
     return <div>
-        123
+      <Table data={this.tableData} />
     </div>
   }
 }
