@@ -6,6 +6,7 @@
     ],
     "plugins": [
         "transform-decorators-legacy",
+        "react-activation/babel",
         "transform-runtime",
         [
             "import",

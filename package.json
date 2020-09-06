@@ -8,6 +8,7 @@
     "mobx": "^5.15.6",
     "mobx-react": "^6.3.0",
     "react": "^16.8.6",
+    "react-activation": "^0.5.5",
     "react-dom": "^16.8.6",
     "react-router-dom": "^5.0.0",
     "react-transition-group": "^4.4.1"

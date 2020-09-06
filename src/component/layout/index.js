@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons'
 import { Route, Link } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
+import KeepAlive, { withAliveScope } from 'react-activation'
 import { observer, inject } from 'mobx-react'
 import User from '@/view/system/user'
 import Home from '@/view/home'
@@ -19,6 +20,7 @@ const {
 const SubMenu = Menu.SubMenu
 
 const wrapAnimation = (match, Component) => {
+  console.log(match ? match.url : '')
   return <CSSTransition
     in={match !== null}
     classNames='page'
@@ -26,9 +28,12 @@ const wrapAnimation = (match, Component) => {
     mountOnEnter
     unmountOnExit
   >
-    <Component />
+    <KeepAlive name={match ? match.url : ''}>
+      <Component />
+    </KeepAlive>
   </CSSTransition>
 }
+@withAliveScope
 @inject('app')
 @inject('user')
 @observer
@@ -64,6 +69,7 @@ class MyLayout extends React.Component {
     this.getInfo()
   }
   render () {
+    console.log(this.props)
     const menu = (
       <Menu>
         <Menu.Item key='0'>
