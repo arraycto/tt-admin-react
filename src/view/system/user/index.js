@@ -1,29 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
 import './index.scss'
 
-import { observer } from 'mobx-react'
 import { Table } from 'antd'
 import { getUserList } from '@/api/user'
-import { observable } from 'mobx'
-@observer
-class User extends React.Component {
-  @observable tableData = []
-  getUserList () {
+export default() => {
+  const [tableData, setTableData] = useState([])
+  useEffect(() => {
+    getUserData()
+  }, [])
+  const getUserData = () => {
     getUserList().then(res => {
       if (res.status === 200) {
         console.log(res.data)
+        setTableData(res.data)
       }
     })
   }
-  componentDidMount () {
-    this.getUserList()
-  }
-  render () {
-    return <div>
-      <Table data={this.tableData} />
-    </div>
-  }
+  return <div>
+    <Table data={tableData} />
+  </div>
 }
-
-export default User
