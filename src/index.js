@@ -1,11 +1,8 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import store from './store'
-import { Provider } from 'mobx-react'
 import './index.scss'
 import App from '@/router'
 
-ReactDOM.render(<Provider {...store}>
+ReactDOM.render(
   <App />
-</Provider>
-, document.getElementById('root'))
+  , document.getElementById('root'))

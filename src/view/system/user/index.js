@@ -11,8 +11,8 @@ class User extends React.Component {
   @observable tableData = []
   getUserList () {
     getUserList().then(res => {
-      if (res.data.status === 200) {
-        console.log(res.data.data)
+      if (res.status === 200) {
+        console.log(res.data)
       }
     })
   }

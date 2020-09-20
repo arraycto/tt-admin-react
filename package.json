@@ -5,8 +5,6 @@
   "dependencies": {
     "antd": "^4.6.1",
     "axios": "^0.20.0",
-    "mobx": "^5.15.6",
-    "mobx-react": "^6.3.0",
     "react": "^16.8.6",
     "react-activation": "^0.5.5",
     "react-dom": "^16.8.6",
@@ -16,7 +14,7 @@
   "scripts": {
     "start": "webpack-dev-server --progress --profile --colors --config config/webpack-dev.config.js --open",
     "build": "webpack --progress --profile --colors --config config/webpack-pro.config.js",
-    "fix": "./node_modules/.bin/standard --fix"
+    "fix": "standard --fix"
   },
   "standard": {
     "parser": "babel-eslint",
