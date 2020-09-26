@@ -7,12 +7,14 @@ import {
   UserOutlined,
   HomeOutlined
 } from '@ant-design/icons'
-import { Route, Link } from 'react-router-dom'
+import { Route, Link, Redirect, Switch } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 import KeepAlive from 'react-activation'
 import SysMenu from '@/view/system/menu'
+import User from '@/view/system/user'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/user'
+import { getPermissionMenuList } from '@/api/menu'
 const {
   Header, Content, Footer, Sider
 } = Layout
@@ -36,10 +38,6 @@ const routeMap = {
   '/home': {
     path: '/home',
     name: '首页'
-  },
-  '/system/user': {
-    path: '/system/user',
-    name: '用户管理'
   }
 }
 export default ({ location, match, history }) => {
@@ -51,16 +49,40 @@ export default ({ location, match, history }) => {
     name: '首页',
     disableClose: true
   }])
+  const [menuData, setMenuData] = useState([])
+  const [routeData, setRouteData] = useState([])
   const [routeTabKey, setRouteTabKey] = useState('')
   const [collapsed, setCollapsed] = useState(false)
   useEffect(() => {
-    getUserInfo()
+    getUserInfoAndMenuData()
   }, [])
+  // 监听地址栏URL变化，缓存路由tab
   useEffect(() => {
-    setRouteTabKey(location.pathname)
-    if (!routes.map(item => item.path).includes(location.pathname)) {
-      routes.push(routeMap[location.pathname])
-      setRoutes([...routes])
+    const path = location.pathname === '/' ? routes[0].path : location.pathname
+    setRouteTabKey(path)
+    if (!routes.map(item => item.path).includes(path)) {
+      const route = routeData.filter(item => item.path === path)
+      if (route.length > 0) {
+        routes.push({
+          path: route[0].path,
+          name: route[0].name
+        })
+        setRoutes([...routes])
+      }
+    }
+  }, [routeData])
+  useEffect(() => {
+    const path = location.pathname === '/' ? routes[0].path : location.pathname
+    setRouteTabKey(path)
+    if (!routes.map(item => item.path).includes(path)) {
+      const route = routeData.filter(item => item.path === path)
+      if (route.length > 0) {
+        routes.push({
+          path: route[0].path,
+          name: route[0].name
+        })
+        setRoutes([...routes])
+      }
     }
   }, [location])
   const logoutHandle = () => {
@@ -75,20 +97,31 @@ export default ({ location, match, history }) => {
       }
     })
   }
-  const getUserInfo = () => {
+
+  const buildRoute = (obj, component) => {
+    routeMap[obj.url] = {
+      path: obj.url,
+      name: obj.name
+    }
+    return {
+      path: obj.url,
+      name: obj.name,
+      component: User
+    }
+  }
+  const getUserInfoAndMenuData = async () => {
     window.loginGlobalMessageBoxCount = 1
     window.disableWarning = true
-    getInfo().then(res => {
+    try {
+      let res = await getInfo()
       window.loginGlobalMessageBoxCount = 0
       window.disableWarning = false
-      if (res.status === 200) {
-        setUserInfo(res.data)
-      }
-    }).catch(res => {
-      console.error(res)
+      setUserInfo(res.data)
+    } catch (error) {
+      console.error(error)
       window.loginGlobalMessageBoxCount = 0
       window.disableWarning = false
-      if (res.data.status === 401) {
+      if (error.data.status === 401) {
         history.push({
           pathname: '/login',
           query: {
@@ -96,7 +129,36 @@ export default ({ location, match, history }) => {
           }
         })
       }
+    }
+    let res = await getPermissionMenuList({ parentId: 0 })
+    setMenuData(res.data)
+    const routeList = []
+    res.data.forEach(item => {
+      const stack = []
+      stack.push(item)
+      while (stack.length > 0) {
+        const pop = stack.pop()
+        if (pop.children && pop.children.length > 0) {
+          const data = pop.children.filter(item => item.type === 2)
+          if (data.length > 0) {
+            if (pop.url) {
+              routeList.push(buildRoute(pop, { component: () => import(`@/views${pop.url}/index.js`) }))
+            }
+          } else {
+            pop.children.map(child => {
+              stack.push(child)
+            })
+          }
+        } else {
+          if (pop.type !== 2 && pop.url) {
+            routeList.push(buildRoute(pop, { component: () => import(`@/views${pop.url}/index.js`) }))
+          }
+        }
+      }
     })
+    console.log(res.data)
+    console.log(routeList)
+    setRouteData(routeList)
   }
 
   const menu = (
@@ -171,20 +233,26 @@ export default ({ location, match, history }) => {
             </Tabs>
           </div>
           <div className='app-contain-content'>
+            <Route exact path={'/'} >
+              <Redirect to='/home' />
+            </Route>
             <Route path={match.url === '/' ? '/home' : (match.url + '/home')} >
               {({ match }) => (
                 wrapAnimation(match, Home)
               )}
             </Route>
-            <Route path={match.url === '/' ? '/system/user' : (match.url + '/system/user')}>
-              {({ match }) => (
-                wrapAnimation(match, SysMenu)
-              )}
-            </Route>
+            {
+              routeData.map(item => <Route path={match.url === '/' ? item.path : (match.url + item.path)}>
+                {({ match }) => (
+                  wrapAnimation(match, item.component)
+                )}
+              </Route>)
+            }
+
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
-            Ant Design ©2018 Created by Ant UED
+            TT Admin @2020 Created by TONGXIN
         </Footer>
       </Layout>
     </Layout>
