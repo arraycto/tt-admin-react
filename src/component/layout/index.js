@@ -1,17 +1,12 @@
 import React, { useState, useEffect } from 'react'
 
 import './index.scss'
-import { Layout, Menu, Breadcrumb, Row, Col, Dropdown, Tabs } from 'antd'
-import {
-  MailOutlined,
-  UserOutlined,
-  HomeOutlined
-} from '@ant-design/icons'
+import { Layout, Menu, Breadcrumb, Row, Col, Dropdown, Tabs, Avatar } from 'antd'
+import * as Icon from '@ant-design/icons'
+import HomeOutlined from '@ant-design/icons/HomeOutlined'
 import { Route, Link, Redirect, Switch } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 import KeepAlive from 'react-activation'
-import SysMenu from '@/view/system/menu'
-import User from '@/view/system/user'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/user'
 import { getPermissionMenuList } from '@/api/menu'
@@ -34,12 +29,6 @@ const wrapAnimation = (match, Component) => {
   </CSSTransition>
 }
 
-const routeMap = {
-  '/home': {
-    path: '/home',
-    name: '首页'
-  }
-}
 export default ({ location, match, history }) => {
   const [userInfo, setUserInfo] = useState({
     username: ''
@@ -98,16 +87,22 @@ export default ({ location, match, history }) => {
     })
   }
 
-  const buildRoute = (obj, component) => {
-    routeMap[obj.url] = {
-      path: obj.url,
-      name: obj.name
+  const buildRoute = (data) => {
+    if (hasChildren(data)) {
+      return <React.Fragment>
+        {
+          data.children.map(item => buildRoute(item))
+        }
+      </React.Fragment>
     }
-    return {
-      path: obj.url,
-      name: obj.name,
-      component: User
+    if (data.url) {
+      return <Route key={data.url} path={match.url === '/' ? data.url : (match.url + data.url)}>
+        {({ match }) => (
+          wrapAnimation(match, () => import(`@/views${data.url}/index.js`))
+        )}
+      </Route>
     }
+    return null
   }
   const getUserInfoAndMenuData = async () => {
     window.loginGlobalMessageBoxCount = 1
@@ -133,7 +128,8 @@ export default ({ location, match, history }) => {
     let res = await getPermissionMenuList({ parentId: 0 })
     setMenuData(res.data)
     const routeList = []
-    res.data.forEach(item => {
+    const tempData = JSON.parse(JSON.stringify(res.data))
+    tempData.forEach(item => {
       const stack = []
       stack.push(item)
       while (stack.length > 0) {
@@ -142,7 +138,10 @@ export default ({ location, match, history }) => {
           const data = pop.children.filter(item => item.type === 2)
           if (data.length > 0) {
             if (pop.url) {
-              routeList.push(buildRoute(pop, { component: () => import(`@/views${pop.url}/index.js`) }))
+              routeList.push({
+                path: pop.url,
+                name: pop.name
+              })
             }
           } else {
             pop.children.map(child => {
@@ -151,14 +150,39 @@ export default ({ location, match, history }) => {
           }
         } else {
           if (pop.type !== 2 && pop.url) {
-            routeList.push(buildRoute(pop, { component: () => import(`@/views${pop.url}/index.js`) }))
+            routeList.push(buildRoute({
+              path: pop.url,
+              name: pop.name
+            }))
           }
         }
       }
     })
-    console.log(res.data)
-    console.log(routeList)
     setRouteData(routeList)
+    console.log(routeList)
+  }
+  const buildMenu = (data) => {
+    const Com = Icon[data.icon] ? Icon[data.icon] : null
+    if (hasChildren(data)) {
+      return <SubMenu key={data.name} icon={Com ? <Com /> : null} title={data.name}>
+        {data.children.map(item => buildMenu(item))}
+      </SubMenu>
+    }
+    return <Menu.Item key={data.name} icon={Com ? <Com /> : null}>
+      {data.url ? <Link to={data.url}>{data.name}</Link> : data.name}
+    </Menu.Item>
+  }
+  const hasChildren = data => {
+    if (!data.children) {
+      return false
+    }
+    if (data.children.length === 0) {
+      return false
+    }
+    if (data.children.filter(item => item.type === 2).length > 0) {
+      return false
+    }
+    return true
   }
 
   const menu = (
@@ -177,14 +201,10 @@ export default ({ location, match, history }) => {
       <Sider collapsible collapsed={collapsed} onCollapse={value => { setCollapsed(value) }}>
         <div className='app-contain-logo' >{collapsed ? 'TT' : 'TT Admin'}</div>
         <Menu theme='dark' mode='inline'>
-          <Menu.Item key='home' icon={<HomeOutlined />}>
-            <Link to={'/home'}>首页</Link>
+          <Menu.Item key={'首页'} icon={<HomeOutlined />}>
+            <Link to={'/home'}>{'首页'}</Link>
           </Menu.Item>
-          <SubMenu key='system' icon={<MailOutlined />} title='系统管理'>
-            <Menu.Item key='5'>
-              <Link to={'/system/user'}>用户管理</Link>
-            </Menu.Item>
-          </SubMenu>
+          {menuData.map(item => buildMenu(item))}
         </Menu>
       </Sider>
       <Layout>
@@ -207,7 +227,8 @@ export default ({ location, match, history }) => {
               <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 50px' }}>
                 <Dropdown overlay={menu} placement='bottomCenter' trigger={['click']}>
                   <span className='ant-dropdown-link' style={{ cursor: 'pointer' }} onClick={e => e.preventDefault()}>
-                    <UserOutlined /><span style={{ marginLeft: 5 }}>{userInfo.username}</span>
+                    <Avatar src={userInfo.image} />
+                    <span style={{ marginLeft: 5 }}>{userInfo.username}</span>
                   </span>
                 </Dropdown>
               </div>
@@ -241,13 +262,11 @@ export default ({ location, match, history }) => {
                 wrapAnimation(match, Home)
               )}
             </Route>
-            {
-              routeData.map(item => <Route path={match.url === '/' ? item.path : (match.url + item.path)}>
-                {({ match }) => (
-                  wrapAnimation(match, item.component)
-                )}
-              </Route>)
-            }
+            <Switch>
+              {
+                menuData.map(item => buildRoute(item))
+              }
+            </Switch>
 
           </div>
         </Content>
