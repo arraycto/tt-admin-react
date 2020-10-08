@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 
 import './index.scss'
 import { Layout, Menu, Breadcrumb, Row, Col, Dropdown, Tabs, Avatar } from 'antd'
+import Loadable from 'react-loadable'
 import * as Icon from '@ant-design/icons'
 import HomeOutlined from '@ant-design/icons/HomeOutlined'
 import { Route, Link, Redirect, Switch } from 'react-router-dom'
@@ -9,12 +10,15 @@ import { CSSTransition } from 'react-transition-group'
 import KeepAlive from 'react-activation'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/user'
-import { getPermissionMenuList } from '@/api/menu'
+import { getPermissionMenuList } from '@/api/system/menu'
 const {
   Header, Content, Footer, Sider
 } = Layout
 const SubMenu = Menu.SubMenu
 
+const Loading = () => {
+  return <div />
+}
 const wrapAnimation = (match, Component) => {
   return <CSSTransition
     in={match !== null}
@@ -98,7 +102,10 @@ export default ({ location, match, history }) => {
     if (data.url) {
       return <Route key={data.url} path={match.url === '/' ? data.url : (match.url + data.url)}>
         {({ match }) => (
-          wrapAnimation(match, () => import(`@/views${data.url}/index.js`))
+          wrapAnimation(match, Loadable({
+            loading: Loading,
+            loader: () => import(`@/view${data.url}/index.js`)
+          }))
         )}
       </Route>
     }
