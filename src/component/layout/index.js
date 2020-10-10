@@ -45,16 +45,35 @@ export default ({ location, match, history }) => {
   const [menuData, setMenuData] = useState([])
   const [routeData, setRouteData] = useState([])
   const [routeTabKey, setRouteTabKey] = useState('')
+  const [currentRoute, setCurrentRoute] = useState({
+    path: '',
+    name: ''
+  })
   const [collapsed, setCollapsed] = useState(false)
   useEffect(() => {
     getUserInfoAndMenuData()
   }, [])
+
   // 监听地址栏URL变化，缓存路由tab
   useEffect(() => {
     const path = location.pathname === '/' ? routes[0].path : location.pathname
     setRouteTabKey(path)
+    const route = routeData.filter(item => item.path === path)
+    if (path === '/' || path === '/home') {
+      setCurrentRoute({
+        path: '',
+        name: ''
+      })
+    } else {
+      if (route.length > 0) {
+        setCurrentRoute({
+          path: route[0].path,
+          name: route[0].name
+        })
+      }
+    }
+
     if (!routes.map(item => item.path).includes(path)) {
-      const route = routeData.filter(item => item.path === path)
       if (route.length > 0) {
         routes.push({
           path: route[0].path,
@@ -63,21 +82,7 @@ export default ({ location, match, history }) => {
         setRoutes([...routes])
       }
     }
-  }, [routeData])
-  useEffect(() => {
-    const path = location.pathname === '/' ? routes[0].path : location.pathname
-    setRouteTabKey(path)
-    if (!routes.map(item => item.path).includes(path)) {
-      const route = routeData.filter(item => item.path === path)
-      if (route.length > 0) {
-        routes.push({
-          path: route[0].path,
-          name: route[0].name
-        })
-        setRoutes([...routes])
-      }
-    }
-  }, [location])
+  }, [location, routeData])
   const logoutHandle = () => {
     logout().then(res => {
       if (res.status === 200) {
@@ -93,14 +98,14 @@ export default ({ location, match, history }) => {
 
   const buildRoute = (data) => {
     if (hasChildren(data)) {
-      return <React.Fragment>
+      return <React.Fragment key={data.name}>
         {
-          data.children.map(item => buildRoute(item))
+          data.children.map((item, index) => buildRoute(item))
         }
       </React.Fragment>
     }
     if (data.url) {
-      return <Route key={data.url} path={match.url === '/' ? data.url : (match.url + data.url)}>
+      return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)}>
         {({ match }) => (
           wrapAnimation(match, Loadable({
             loading: Loading,
@@ -172,7 +177,7 @@ export default ({ location, match, history }) => {
     const Com = Icon[data.icon] ? Icon[data.icon] : null
     if (hasChildren(data)) {
       return <SubMenu key={data.name} icon={Com ? <Com /> : null} title={data.name}>
-        {data.children.map(item => buildMenu(item))}
+        {data.children.map((item, index) => buildMenu(item))}
       </SubMenu>
     }
     return <Menu.Item key={data.name} icon={Com ? <Com /> : null}>
@@ -211,7 +216,7 @@ export default ({ location, match, history }) => {
           <Menu.Item key={'首页'} icon={<HomeOutlined />}>
             <Link to={'/home'}>{'首页'}</Link>
           </Menu.Item>
-          {menuData.map(item => buildMenu(item))}
+          {menuData.map((item, index) => buildMenu(item, index))}
         </Menu>
       </Sider>
       <Layout>
@@ -220,13 +225,15 @@ export default ({ location, match, history }) => {
             <Col span={8}>
               <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 10px' }}>
                 <Breadcrumb>
-                  <Breadcrumb.Item>首页</Breadcrumb.Item>
                   <Breadcrumb.Item>
-                    <a href=''>系统管理</a>
+                    <Link to={'/home'}>首页</Link>
                   </Breadcrumb.Item>
-                  <Breadcrumb.Item>
-                    <a href=''>用户管理</a>
-                  </Breadcrumb.Item>
+                  {
+                    currentRoute.path ? <Breadcrumb.Item>
+                      <Link to={currentRoute.path}>{currentRoute.name}</Link>
+                    </Breadcrumb.Item> : null
+                  }
+
                 </Breadcrumb>
               </div>
             </Col>
@@ -271,7 +278,7 @@ export default ({ location, match, history }) => {
             </Route>
             <Switch>
               {
-                menuData.map(item => buildRoute(item))
+                menuData.map((item, index) => buildRoute(item, index))
               }
             </Switch>
 

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 import './index.scss'
 
-import { Button, Divider, Input, Table, Tag, Form } from 'antd'
-import { getMenuPageList, deleteMenu } from '@/api/system/menu'
+import { Button, Divider, Input, Table, Tag, Form, Radio, Modal, notification } from 'antd'
+import { getMenuPageList, deleteMenu, addMenu, updateMenu } from '@/api/system/menu'
 import SearchOutlined from '@ant-design/icons/SearchOutlined'
 import * as Icon from '@ant-design/icons'
 import MenuIcon from './icon'
+
 export default() => {
   const [tableData, setTableData] = useState([])
   const [query, setQuery] = useState({
@@ -19,9 +20,11 @@ export default() => {
   })
   const [tableLoading, setTableLoading] = useState(false)
   const [iconShow, setIconShow] = useState(false)
+  const [formModalShow, setFormModalShow] = useState(false)
+  const formInstance = useRef(null)
+  const [formModalSubmitButtonLoading, setFormModalSubmitButtonLoading] = useState(false)
   useEffect(() => {
     getTableData()
-    console.log(Object.keys(Icon))
   }, [])
 
   useEffect(() => {
@@ -38,6 +41,46 @@ export default() => {
       console.error(error)
       setTableLoading(false)
     })
+  }
+
+  const saveMenu = (data) => {
+    setFormModalSubmitButtonLoading(true)
+    if (!data.id) {
+      addMenu({ ...data }).then(res => {
+        setFormModalSubmitButtonLoading(false)
+        notification.success({ message: '添加成功', duration: 3 })
+        setFormModalShow(false)
+        setQuery({ ...query, pageNum: 1, fetch: true })
+      })
+    } else {
+      updateMenu({ ...data }).then(res => {
+        setFormModalSubmitButtonLoading(false)
+        notification.success({ message: '修改成功', duration: 3 })
+        setFormModalShow(false)
+        setQuery({ ...query, pageNum: 1, fetch: true })
+      })
+    }
+  }
+  const deleteData = (data) => {
+    Modal.confirm({
+      title: '删除',
+      content: `确认删除${data.id} ?`,
+      okText: '确认',
+      cancelText: '取消',
+      onOk: () => {
+        deleteMenu(data).then(res => {
+          notification.success({ message: '删除成功', duration: 3 })
+          setQuery({ ...query, fetch: true })
+        })
+      }
+    })
+  }
+  const renderIcon = icon => {
+    const Ioc = Icon[icon]
+    if (Ioc) {
+      return <Ioc style={{ fontSize: 24 }} />
+    }
+    return null
   }
 
   const columns = [{
@@ -65,7 +108,13 @@ export default() => {
     width: '10%',
     key: 'icon',
     render: value => {
+      if (value) {
+        return null
+      }
       const Ioc = Icon[value]
+      if (Ioc === undefined) {
+        return null
+      }
       return <Ioc style={{ fontSize: 26 }} />
     }
   }, {
@@ -88,14 +137,82 @@ export default() => {
     width: '20%',
     render: (value, record) => {
       return <div>
-        <Button type='primary' onClick={() => { setIconShow(true) }}>添加</Button>
+        <Button type='primary' onClick={() => {
+          formInstance.current.setFieldsValue({ id: null, parentId: record.id, parentName: record.name })
+          setFormModalShow(true)
+        }}>添加</Button>
         <Divider type='vertical' />
-        <Button type='primary'>编辑</Button>
+        <Button type='primary' onClick={() => {
+          setFormModalShow(true)
+          formInstance.current.setFieldsValue({ ...record })
+        }}>编辑</Button>
         <Divider type='vertical' />
-        <Button type='danger'>删除</Button>
+        <Button type='danger' onClick={() => {
+          deleteData(record)
+        }}>删除</Button>
       </div>
     }
   }]
+  const resetForm = () => {
+
+  }
+  const getFieldValue = key => {
+    return formInstance.current && formInstance.current.getFieldValue(key)
+  }
+  const renderFormModal = () => {
+    return <Modal
+      title={getFieldValue('id') ? '修改' : '添加'}
+      visible={formModalShow}
+      forceRender
+      okText={'提交'}
+      cancelText={'取消'}
+      footer={<div>
+        <Button onClick={() => {
+          resetForm()
+          setFormModalShow(false)
+        }}>取消</Button>
+        <Button loading={formModalSubmitButtonLoading} type='primary' onClick={() => {
+          formInstance.current.validateFields()
+            .then(values => {
+              // 表单校验成功
+              saveMenu(formInstance.current.getFieldValue())
+            }).catch(e => {
+              // 表单校验失败
+              console.log(e)
+            })
+        }}>提交</Button>
+      </div>}
+      onCancel={() => {
+        setFormModalShow(false)
+      }}
+    >
+      <Form ref={formInstance} labelCol={{ span: 4 }} wrapperCol={{ span: 16 }}>
+        <Form.Item label='父节点'>
+          <Input value={getFieldValue('parentId') === 0 ? '根节点' : getFieldValue('parentName')} disabled />
+        </Form.Item>
+        <Form.Item name='name' label='菜单名称' rules={[{ required: true, message: '必填' }]} hasFeedback>
+          <Input />
+        </Form.Item>
+        <Form.Item name='url' label='菜单路由'>
+          <Input />
+        </Form.Item>
+        <Form.Item name='type' label='菜单类型' rules={[{ required: true, message: '必填' }]} hasFeedback>
+          <Radio.Group
+            options={[
+              { label: '菜单', value: 1 },
+              { label: '按钮', value: 2 }
+            ]}
+          />
+        </Form.Item>
+        <Form.Item name='icon' label='图标'>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: 10 }}>{renderIcon(getFieldValue('icon') : '')}</span>
+            <Button type='primary' size='small' onClick={() => { setIconShow(true) }} >点我选择</Button>
+          </div>
+        </Form.Item>
+      </Form>
+    </Modal>
+  }
   return <div className='system-menu-contain'>
     <div className='system-menu-contain-search'>
       <Form name='horizontal_login' layout='inline'>
@@ -104,6 +221,12 @@ export default() => {
         </Form.Item>
         <Form.Item >
           <Button shape='circle' icon={<SearchOutlined />} onClick={() => { setQuery({ ...query, pageNum: 1, fetch: true }) }} />
+        </Form.Item>
+        <Form.Item >
+          <Button type='primary' onClick={() => {
+            formInstance.current.setFieldsValue({ id: null, parentId: 0 })
+            setFormModalShow(true)
+          }} >添加</Button>
         </Form.Item>
       </Form>
     </div>
@@ -123,9 +246,14 @@ export default() => {
           }
         }} />
     </div>
-    <MenuIcon show={iconShow} onCancel={() => { setIconShow(false) }} onChange={value => {
-      console.log(value)
-      setIconShow(false)
-    }} />
+    <MenuIcon show={iconShow}
+      onChange={value => {
+        formInstance.current.setFieldsValue({ icon: value })
+        setIconShow(false)
+      }}
+      onCancel={() => {
+        setIconShow(false)
+      }} />
+    {renderFormModal()}
   </div>
 }
