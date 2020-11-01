@@ -2,9 +2,10 @@ import React, { useState } from 'react'
 
 import './index.scss'
 
-import { Input, Button, Layout, Form } from 'antd'
+import { Input, Button, Layout, Form, Avatar } from 'antd'
 import { UserOutlined, LockOutlined } from '@ant-design/icons'
-import { login } from '@/api/user'
+import { login } from '@/api/system/user'
+import Logo from '@/images/logo.png'
 export default ({ location, match, history }) => {
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
@@ -27,7 +28,7 @@ export default ({ location, match, history }) => {
       <Layout.Content>
         <Form className='login-form'>
           <div className='user-img'>
-            <img alt='logo' />
+            <Avatar size={32} src={Logo} alt='logo' style={{ marginRight: 10 }} />
             <b>TT</b>
             <span>Admin</span>
           </div>

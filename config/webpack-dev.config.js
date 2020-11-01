@@ -8,7 +8,7 @@ const dev = {
     publicPath: '/'
   },
   devServer: {
-    port: 8081,
+    port: 8080,
     contentBase: './dist',
     proxy: {
       '/': 'http://localhost:9090'

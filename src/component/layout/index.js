@@ -9,7 +9,7 @@ import { Route, Link, Redirect, Switch } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 import KeepAlive from 'react-activation'
 import Home from '@/view/home'
-import { logout, getInfo } from '@/api/user'
+import { logout, getInfo } from '@/api/system/user'
 import { getPermissionMenuList } from '@/api/system/menu'
 const {
   Header, Content, Footer, Sider

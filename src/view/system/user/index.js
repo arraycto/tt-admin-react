@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 import './index.scss'
 
 import { Table } from 'antd'
-import { getUserList } from '@/api/user'
+import { getUserList } from '@/api/system/user'
 export default() => {
   const [tableData, setTableData] = useState([])
   useEffect(() => {
