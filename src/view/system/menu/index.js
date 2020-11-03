@@ -112,6 +112,7 @@ export default() => {
         return null
       }
       const Ioc = Icon[value]
+      console.log(Ioc)
       if (Ioc === undefined) {
         return null
       }
@@ -129,6 +130,8 @@ export default() => {
           return <Tag color='blue'>菜单</Tag>
         case 2:
           return <Tag color='lime'>按钮</Tag>
+        case 3:
+          return <Tag color='purple'>路由</Tag>
       }
     }
   }, {
@@ -193,13 +196,14 @@ export default() => {
         <Form.Item name='name' label='菜单名称' rules={[{ required: true, message: '必填' }]} hasFeedback>
           <Input />
         </Form.Item>
-        <Form.Item name='url' label='菜单路由'>
+        <Form.Item name='url' label='链接'>
           <Input />
         </Form.Item>
         <Form.Item name='type' label='菜单类型' rules={[{ required: true, message: '必填' }]} hasFeedback>
           <Radio.Group
             options={[
               { label: '菜单', value: 1 },
+              { label: '路由', value: 3 },
               { label: '按钮', value: 2 }
             ]}
           />

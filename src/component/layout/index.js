@@ -82,6 +82,7 @@ export default ({ location, match, history }) => {
         setRoutes([...routes])
       }
     }
+    console.log(routeData)
   }, [location, routeData])
   const logoutHandle = () => {
     logout().then(res => {
@@ -105,6 +106,7 @@ export default ({ location, match, history }) => {
       </React.Fragment>
     }
     if (data.url) {
+      console.log(data.url)
       return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)}>
         {({ match }) => (
           wrapAnimation(match, Loadable({
@@ -162,19 +164,21 @@ export default ({ location, match, history }) => {
           }
         } else {
           if (pop.type !== 2 && pop.url) {
-            routeList.push(buildRoute({
+            routeList.push({
               path: pop.url,
               name: pop.name
-            }))
+            })
           }
         }
       }
     })
     setRouteData(routeList)
-    console.log(routeList)
   }
   const buildMenu = (data) => {
     const Com = Icon[data.icon] ? Icon[data.icon] : null
+    if (data.type !== 1) {
+      return null
+    }
     if (hasChildren(data)) {
       return <SubMenu key={data.name} icon={Com ? <Com /> : null} title={data.name}>
         {data.children.map((item, index) => buildMenu(item))}
@@ -200,7 +204,7 @@ export default ({ location, match, history }) => {
   const menu = (
     <Menu>
       <Menu.Item key='0'>
-          个人中心
+        <Link to={'/profile'}>{'个人中心'}</Link>
       </Menu.Item>
       <Menu.Divider />
       <Menu.Item key='3' onClick={logoutHandle}>
