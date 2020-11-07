@@ -108,7 +108,7 @@ export default() => {
     width: '10%',
     key: 'icon',
     render: value => {
-      if (value) {
+      if (!value) {
         return null
       }
       const Ioc = Icon[value]

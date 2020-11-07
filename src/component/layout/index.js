@@ -11,6 +11,7 @@ import KeepAlive from 'react-activation'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/system/user'
 import { getPermissionMenuList } from '@/api/system/menu'
+import Version from '@/view/version'
 const {
   Header, Content, Footer, Sider
 } = Layout
@@ -82,7 +83,6 @@ export default ({ location, match, history }) => {
         setRoutes([...routes])
       }
     }
-    console.log(routeData)
   }, [location, routeData])
   const logoutHandle = () => {
     logout().then(res => {
@@ -106,8 +106,8 @@ export default ({ location, match, history }) => {
       </React.Fragment>
     }
     if (data.url) {
-      console.log(data.url)
-      return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)}>
+      console.log(match.url === '/' ? data.url : (match.url + data.url), data.name)
+      return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)} >
         {({ match }) => (
           wrapAnimation(match, Loadable({
             loading: Loading,
@@ -280,12 +280,11 @@ export default ({ location, match, history }) => {
                 wrapAnimation(match, Home)
               )}
             </Route>
-            <Switch>
-              {
-                menuData.map((item, index) => buildRoute(item, index))
-              }
-            </Switch>
-
+            {
+              menuData.map((item, index) => {
+                return buildRoute(item, index)
+              })
+            }
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>

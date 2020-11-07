@@ -1,9 +1,17 @@
 import React from 'react'
 
-import { Input } from 'antd'
+import { Card, Avatar } from 'antd'
 export default () => {
   return <div className='profile-contain'>
-    <Input />
-    1231
+    <Card style={{ width: '100%' }}>
+      <div style={{ display: 'flex' }}>
+        <div style={{ flex: 1 }}>
+          <Avatar size={128} src={''} />
+        </div>
+        <div style={{ flex: 1 }}>
+          123asd
+        </div>
+      </div>
+    </Card>
   </div>
 }
