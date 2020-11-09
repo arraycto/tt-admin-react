@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import './index.scss'
 import { Layout, Menu, Breadcrumb, Row, Col, Dropdown, Tabs, Avatar } from 'antd'
 import Loadable from 'react-loadable'
 import * as Icon from '@ant-design/icons'
 import HomeOutlined from '@ant-design/icons/HomeOutlined'
-import { Route, Link, Redirect, Switch } from 'react-router-dom'
+import { Route, Link, Redirect } from 'react-router-dom'
 import { CSSTransition } from 'react-transition-group'
 import KeepAlive from 'react-activation'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/system/user'
 import { getPermissionMenuList } from '@/api/system/menu'
-import Version from '@/view/version'
+import { updateState } from '@/action'
+import { useMappedState } from '@/store'
 const {
   Header, Content, Footer, Sider
 } = Layout
@@ -35,9 +36,13 @@ const wrapAnimation = (match, Component) => {
 }
 
 export default ({ location, match, history }) => {
-  const [userInfo, setUserInfo] = useState({
-    username: ''
-  })
+  // 获取全局用户信息
+  const { userInfo } = useMappedState(
+    useCallback(
+      state => ({
+        userInfo: state.userInfo
+      }), [])
+  )
   const [routes, setRoutes] = useState([{
     path: '/home',
     name: '首页',
@@ -125,7 +130,9 @@ export default ({ location, match, history }) => {
       let res = await getInfo()
       window.loginGlobalMessageBoxCount = 0
       window.disableWarning = false
-      setUserInfo(res.data)
+
+      // setUserInfo(res.data)
+      updateState({ userInfo: res.data })
     } catch (error) {
       console.error(error)
       window.loginGlobalMessageBoxCount = 0
