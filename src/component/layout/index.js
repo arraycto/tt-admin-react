@@ -111,7 +111,6 @@ export default ({ location, match, history }) => {
       </React.Fragment>
     }
     if (data.url) {
-      console.log(match.url === '/' ? data.url : (match.url + data.url), data.name)
       return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)} >
         {({ match }) => (
           wrapAnimation(match, Loadable({
@@ -132,6 +131,7 @@ export default ({ location, match, history }) => {
       window.disableWarning = false
 
       // setUserInfo(res.data)
+      console.log(res.data)
       updateState({ userInfo: res.data })
     } catch (error) {
       console.error(error)

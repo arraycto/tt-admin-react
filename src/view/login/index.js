@@ -17,9 +17,10 @@ export default ({ location, match, history }) => {
     setLoading(true)
     login(form).then(res => {
       setLoading(false)
-      if (res.status === 200) {
-        window.location.href = window.location.origin + '/#' + (location.query ? location.query.path : '/')
-      }
+      window.location.href = window.location.origin + '/#' + (location.query ? location.query.path : '/')
+    }).catch(error => {
+      console.log(error)
+      setLoading(false)
     })
   }
 

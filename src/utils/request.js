@@ -23,7 +23,7 @@ request.interceptors.response.use(
     // if the custom code is not 20000, it is judged as an error.
     if (res.status !== 200) {
       if (!window.disableWarning) {
-        notification.warning({ message: '警告', description: res.message, duration: 3 })
+        notification.warning({ message: '警告', description: res.msg, duration: 3 })
       }
       if (res.status === 401) {
         if (window.requestCount === 1) {
