@@ -271,7 +271,9 @@ export default ({ location, match, history }) => {
                 setRoutes([...routes])
               }}
               onChange={key => {
-                history.push(key)
+                if (key !== location.pathname) {
+                  history.push(key)
+                }
               }}>
               {routes.map(route => (
                 <Tabs.TabPane tab={route.name} key={route.path} closable={!route.disableClose} />
