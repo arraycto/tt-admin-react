@@ -34,10 +34,10 @@ export default ({ location, match, history }) => {
             <span>Admin</span>
           </div>
           <Form.Item>
-            <Input size='large' prefix={<UserOutlined />} placeholder='用户名' value={form.username} onChange={e => { setForm({ ...form, username: e.target.value }) }} />
+            <Input size='large' prefix={<UserOutlined />} placeholder='用户名' value={form.username} onChange={e => { setForm({ ...form, username: e.target.value }) }} onPressEnter={startLogin} />
           </Form.Item>
           <Form.Item>
-            <Input size='large' prefix={<LockOutlined />} type='password' placeholder='密码' value={form.password} onChange={e => { setForm({ ...form, password: e.target.value }) }} />
+            <Input size='large' prefix={<LockOutlined />} type='password' placeholder='密码' value={form.password} onChange={e => { setForm({ ...form, password: e.target.value }) }} onPressEnter={startLogin} />
           </Form.Item>
           <Form.Item>
             <Button size='large' type='primary' className='login-form-button' loading={loading} onClick={startLogin}> 登录</Button>
