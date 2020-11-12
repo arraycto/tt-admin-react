@@ -6,10 +6,12 @@ import Login from '@/view/login'
 export default () => {
   return (
     <Router>
-      <Switch>
-        <Route path={'/login'} component={Login} />
-        <Route path={'/'} component={(props) => <AliveScope><Layout {...props} /></AliveScope>} />
-      </Switch>
+      <AliveScope>
+        <Switch>
+          <Route path={'/login'} component={Login} />
+          <Route path={'/'} component={Layout} />
+        </Switch>
+      </AliveScope>
     </Router>
   )
 }
