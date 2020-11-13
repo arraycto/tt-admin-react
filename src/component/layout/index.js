@@ -5,8 +5,7 @@ import { Layout, Menu, Breadcrumb, Row, Col, Dropdown, Tabs, Avatar } from 'antd
 import Loadable from 'react-loadable'
 import * as Icon from '@ant-design/icons'
 import HomeOutlined from '@ant-design/icons/HomeOutlined'
-import { Route, Link, Redirect } from 'react-router-dom'
-import { CSSTransition } from 'react-transition-group'
+import { Route, Link, Redirect, Switch } from 'react-router-dom'
 import KeepAlive from 'react-activation'
 import Home from '@/view/home'
 import { logout, getInfo } from '@/api/system/user'
@@ -21,18 +20,8 @@ const SubMenu = Menu.SubMenu
 const Loading = () => {
   return <div />
 }
-const wrapAnimation = (match, Component) => {
-  return <CSSTransition
-    in={match !== null}
-    classNames='page'
-    timeout={300}
-    mountOnEnter
-    unmountOnExit
-  >
-    <KeepAlive name={match ? match.url : ''}>
-      <Component />
-    </KeepAlive>
-  </CSSTransition>
+const wrapAnimation = (Component) => {
+  return <Component />
 }
 
 export default ({ location, match, history }) => {
@@ -59,7 +48,23 @@ export default ({ location, match, history }) => {
   useEffect(() => {
     getUserInfoAndMenuData()
   }, [])
-
+  // 自适应content部分的高度
+  const [contentHeight, setContentHeight] = useState(800)
+  useEffect(() => {
+    let headerHeight = 0
+    let tagHeight = 0
+    let footerHeight = 0
+    if (document.querySelector('.ant-layout-header')) {
+      headerHeight = document.querySelector('.ant-layout-header').clientHeight
+    }
+    if (document.querySelector('.app-contain-tag')) {
+      tagHeight = document.querySelector('.app-contain-tag').clientHeight
+    }
+    if (document.querySelector('.ant-layout-footer')) {
+      footerHeight = document.querySelector('.ant-layout-footer').clientHeight
+    }
+    setContentHeight(document.body.clientHeight - headerHeight - tagHeight - footerHeight)
+  }, [userInfo])
   // 监听地址栏URL变化，缓存路由tab
   useEffect(() => {
     const path = location.pathname === '/' ? routes[0].path : location.pathname
@@ -102,26 +107,6 @@ export default ({ location, match, history }) => {
     })
   }
 
-  const buildRoute = (data) => {
-    if (hasChildren(data)) {
-      return <React.Fragment key={data.name}>
-        {
-          data.children.map((item, index) => buildRoute(item))
-        }
-      </React.Fragment>
-    }
-    if (data.url) {
-      return <Route key={data.name} path={match.url === '/' ? data.url : (match.url + data.url)} >
-        {({ match }) => (
-          wrapAnimation(match, Loadable({
-            loading: Loading,
-            loader: () => import(`@/view${data.url}/index.js`)
-          }))
-        )}
-      </Route>
-    }
-    return null
-  }
   const getUserInfoAndMenuData = async () => {
     window.loginGlobalMessageBoxCount = 1
     window.disableWarning = true
@@ -129,9 +114,6 @@ export default ({ location, match, history }) => {
       let res = await getInfo()
       window.loginGlobalMessageBoxCount = 0
       window.disableWarning = false
-
-      // setUserInfo(res.data)
-      console.log(res.data)
       updateState({ userInfo: res.data })
     } catch (error) {
       console.error(error)
@@ -244,7 +226,6 @@ export default ({ location, match, history }) => {
                       <Link to={currentRoute.path}>{currentRoute.name}</Link>
                     </Breadcrumb.Item> : null
                   }
-
                 </Breadcrumb>
               </div>
             </Col>
@@ -280,20 +261,28 @@ export default ({ location, match, history }) => {
               ))}
             </Tabs>
           </div>
-          <div className='app-contain-content'>
-            <Route exact path={'/'} >
-              <Redirect to='/home' />
-            </Route>
-            <Route path={match.url === '/' ? '/home' : (match.url + '/home')} >
-              {({ match }) => (
-                wrapAnimation(match, Home)
-              )}
-            </Route>
-            {
-              menuData.map((item, index) => {
-                return buildRoute(item, index)
-              })
-            }
+          <div className='app-contain-content' style={{ height: contentHeight }}>
+            <Switch location={location}>
+              <Route exact path={'/'} render={() => (<Redirect to='/home' />)} />
+              <Route
+                path={match.url === '/' ? '/home' : (match.url + '/home')}
+                render={() => (<KeepAlive>
+                  <Home />
+                </KeepAlive>)} />
+              {
+                routeData.map((item, index) => {
+                  return <Route
+                    key={item.path}
+                    path={match.path === '/' ? item.path : (match.url + item.path)}
+                    render={() => (<KeepAlive>
+                      {wrapAnimation(Loadable({
+                        loading: Loading,
+                        loader: () => import(`@/view${item.path}/index.js`)
+                      }))}
+                    </KeepAlive>)} />
+                })
+              }
+            </Switch>
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}>
