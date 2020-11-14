@@ -1,10 +1,12 @@
 const path = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
 module.exports = {
-  entry: './src/index.js',
+  entry: {
+    app: './src/index.js'
+  },
   output: {
     publicPath: '/',
-    filename: 'js/bundle.js',
+    filename: 'js/[name].js',
     path: path.resolve(__dirname, '../dist'),
     chunkFilename: 'js/[name].chunk.js'
   },
