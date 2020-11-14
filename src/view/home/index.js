@@ -15,6 +15,6 @@ export default () => {
       })
   }, [])
   return <div className='home-contain'>
-    <ReactMarkdown>{content}</ReactMarkdown>
+    <ReactMarkdown >{content}</ReactMarkdown>
   </div>
 }
