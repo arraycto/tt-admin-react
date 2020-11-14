@@ -7,4 +7,4 @@ ReactDOM.render(
   <StoreContext.Provider value={store}>
     <App />
   </StoreContext.Provider>
-  , document.getElementById('root'))
+  , document.getElementById('app'))
