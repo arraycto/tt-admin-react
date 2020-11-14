@@ -11,7 +11,7 @@ const dev = {
     port: 8080,
     contentBase: './dist',
     proxy: {
-      '/': 'http://localhost:9090'
+      '/': 'http://118.126.105.207:9090'
     }
   },
   plugins: [
