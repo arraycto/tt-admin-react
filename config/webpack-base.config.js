@@ -1,5 +1,6 @@
 const path = require('path')
 const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const webpack = require('webpack')
 module.exports = {
   entry: {
     app: './src/index.js'
@@ -76,6 +77,9 @@ module.exports = {
     new ExtractTextPlugin({
       filename: `css/[name].css`,
       allChunks: true
+    }),
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(process.env)
     })
   ]
 }

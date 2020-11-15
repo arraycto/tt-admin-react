@@ -16,8 +16,8 @@
     "redux-react-hook": "^4.0.3"
   },
   "scripts": {
-    "start": "webpack-dev-server --progress --profile --colors --config config/webpack-dev.config.js --open",
-    "build": "webpack --progress --profile --colors --config config/webpack-pro.config.js",
+    "start": "cross-env NODE_ENV=development webpack-dev-server --progress --profile --colors --config config/webpack-dev.config.js --open",
+    "build": "cross-env NODE_ENV=production webpack  --progress --profile --colors --config config/webpack-pro.config.js",
     "upload": "node utils/fds.js",
     "deploy": "npm run build && node utils/fds.js",
     "fix": "standard --fix"
@@ -50,6 +50,7 @@
     "babel-preset-stage-1": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "clean-webpack-plugin": "^3.0.0",
+    "cross-env": "^7.0.2",
     "css-loader": "^3.4.2",
     "csv-loader": "^3.0.2",
     "eslint": "^5.1.0",
